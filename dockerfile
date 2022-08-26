@@ -1,4 +1,5 @@
 
-FROM java:8
-
-COPY ./my-app.war /home/ec2-user/jenkins/workspace/maven-simple/my-app
+FROM openjdk:11
+COPY target/my-app-1.0-SNAPSHOT.jar /
+WORKDIR /
+CMD ["java", "-jar", "my-app-1.0-SNAPSHOT.jar"]
