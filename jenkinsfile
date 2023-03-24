@@ -18,42 +18,18 @@ pipeline {
                 sh 'docker build -t ${IMAGE_NAME} -f ${DOCKERFILE} .'
             }
         }
-        stage('test') {
-            steps {
-                if (params.LANGUAGE == 'Java') {
-                    sh 'mvn clean package'
-                } else if (params.LANGUAGE == 'Python') {
-                    sh 'python setup.py sdist bdist_wheel'
-                }
-            }
-           }
         stage('Unit Test') {
-             when {
-                expression { params.RUN_TESTS == true }
-            }
+            when { expression { params.LANGUAGE == 'Java' } }
             steps {
-                if (params.LANGUAGE == 'Java') {
-                    sh 'mvn test'
-                } else if (params.LANGUAGE == 'Python') {
-                    sh 'pytest'
+                sh 'mvn test'
+            }
+            when { expression { params.LANGUAGE == 'Python' } }
+            steps {
+                sh 'pytest'
+            }
+        
                 }
             }
         }
-        stage('Code Quality') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh 'mvn sonar:sonar' // for Java projects
-                    sh 'sonar-scanner' // for Python projects
-                }
-            }
-        }
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t ${IMAGE_NAME} -f ${DOCKERFILE} .'
-            }
-        }
         
-        
-    }
-}
 
