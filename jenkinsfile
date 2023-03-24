@@ -19,13 +19,15 @@ pipeline {
             }
         }
         stage('Unit Test') {
-            when { expression { params.LANGUAGE == 'Java' } }
-            steps {
-                sh 'mvn test'
+             when {
+                expression { params.RUN_TESTS == true }
             }
-            when { expression { params.LANGUAGE == 'Python' } }
             steps {
-                sh 'pytest'
+                if (params.LANGUAGE == 'Java') {
+                    sh 'mvn test'
+                } else if (params.LANGUAGE == 'Python') {
+                    sh 'pytest'
+                }
             }
         }
         stage('Code Quality') {
