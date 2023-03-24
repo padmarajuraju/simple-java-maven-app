@@ -18,6 +18,14 @@ pipeline {
                 sh 'docker build -t ${IMAGE_NAME} -f ${DOCKERFILE} .'
             }
         }
+        stage('test') {
+            steps {
+                if (params.LANGUAGE == 'Java') {
+                    sh 'mvn clean package'
+                } else if (params.LANGUAGE == 'Python') {
+                    sh 'python setup.py sdist bdist_wheel'
+                }
+            }
         stage('Unit Test') {
              when {
                 expression { params.RUN_TESTS == true }
