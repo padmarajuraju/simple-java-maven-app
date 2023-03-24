@@ -1,0 +1,47 @@
+parameters {
+    choice(name: 'LANGUAGE', choices: ['Java', 'Python'], description: 'Select the language of your application')
+    string(name: 'DOCKERFILE', defaultValue: 'Dockerfile', description: 'Enter the name of your Dockerfile')
+    string(name: 'IMAGE_NAME', defaultValue: 'my-app', description: 'Enter the name of your Docker image')
+}
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'docker build -t ${IMAGE_NAME} -f ${DOCKERFILE} .'
+            }
+        }
+        stage('Unit Test') {
+            when { expression { params.LANGUAGE == 'Java' } }
+            steps {
+                sh 'mvn test'
+            }
+            when { expression { params.LANGUAGE == 'Python' } }
+            steps {
+                sh 'pytest'
+            }
+        }
+        stage('Code Quality') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh 'mvn sonar:sonar' // for Java projects
+                    sh 'sonar-scanner' // for Python projects
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t ${IMAGE_NAME} -f ${DOCKERFILE} .'
+            }
+        }
+        
+        
+    }
+}
